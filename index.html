@@ -1,5 +1,74 @@
 <html>
-<body>
-Hello
+<script type="text/javascript" src="js/shortcut.js"></script>
+<script>
+
+var pageMin = 0;
+var curr = 0;
+
+
+var text = [
+{
+'title': "Mikä on juhlan nimi?",
+ 'text': '<p>Haluan kertoa juhlista, jota vietetään massa, jossa olen syntynyt.</p> <p>Tämä ei ole kovin tavallinen juhla. Tämä juhla ei ole niin kuin esimerkiksi uusivousi vai pääsiäinen. Tämä juhla ei liity uskotoon vai perheeseen.</p><p>Juhlan nimi on <b>Nauraa päivä</b> eli <b>Tyhmän päivä</b>.</p> <img src="imgs/pic1.png"> <p>Suomessa tämä juhla nimitään <b>Aprillipäivä</b>. Se on nimetty huhtikuun englanninkielisestä nimestä.'},
+ 
+{'title': "Miksi sitä vietetään?", 
+ 'text': "<p>Minun mielestä, ihmiset juhlivät tätä juhlaa, koska he ovat väsyneet pitkästä talvesta ja ovat iloista siitä, että kevät on tullut.</p>"}, 
+{'title': "Milloin sitä vietetään?", 
+'text': '<p>Juhlapäivä on <b>1 huhtikuta</b>. Venäjällä tämä juhla on alkanut juhliä 300 vuotta sitten. Ensimmäistä kertaa oli vitsi. Ihmisille kerrottiin tuntemattomasta esityksestä, mutta kun he kokoontuivat esitykselle, he näkivät kirjeen lavalla: "Ensimmäistä huhtikuuta älä luota ketään!"</p> <p>Esimmäiset maininnat juhlasta ilmestyvät yli 2000 vuotta sitten.</p>'}, 
+{'title': "Missä sitä viettetään?", 
+'text': "Juhlaa vietetään missä tahansä esimmerkiksi: <ul><li>aamulla voit lukea jotain outoa ja hassu lehdestä eli</li><li>voit itse tehdä jotain huaskaa ystäville, gne.</li></ul>"}, 
+{'title': 'Mitä juhlassa tehdän?', 
+'text': "Juhlassa tehdään vitseja."}, 
+{'title': "title3", 'text': "text3"}, 
+{'title': "title3", 'text': "text3"}, 
+ 
+]
+
+var pageMax = text.length - 1;
+
+function updateButtons() {
+  document.getElementById("fwdbtn").disabled = false;
+  document.getElementById("bckbtn").disabled = false;
+  if( curr == pageMax ) {
+    document.getElementById("fwdbtn").disabled = true;
+  } 
+  if( curr == pageMin ) {
+    document.getElementById("bckbtn").disabled = true;
+  }
+  
+}
+
+function showPres() {
+  document.getElementById("title").innerHTML = text[curr].title;
+  document.getElementById("maintext").innerHTML = text[curr].text;
+  updateButtons();
+}
+
+function goForward() {
+  curr++;
+  showPres();
+}
+
+function goBackward() {
+  curr--;
+  showPres();
+}
+
+    shortcut.add("right", function() {
+        goForward();
+    });   
+    shortcut.add("left", function() {
+        goBackward();
+    }); 
+
+</script>
+
+<body onload="showPres()">
+<button type="button" align="left" id="bckbtn" onclick="goBackward()">backward</button>
+<button type="button" align="right" id="fwdbtn" onclick="goForward()">forward</button>
+
+<h1 id="title" align="center"></h1>
+<div id="maintext" align="left" style="font-size:26px"></div>
+
 </body>
 </html>
