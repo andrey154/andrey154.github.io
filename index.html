@@ -1,3 +1,149 @@
-<html>
-Hello world!
-</html>
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<body>
+<input id="answerbox" type="text">
+<button type="button" onclick=ShowPartitiivi()>submit answer</button>
+<button type="button" onclick=ChooseNominatiivi()>Next</button>
+<div id="answer">    
+</div>
+<div id="output">    
+</div>
+
+<script src="./lua.vm.js"></script>
+
+<script>
+var answer_is;
+</script>
+
+<script type="text/lua">
+
+local pprint = require('pprint')
+require('nouns')
+require('fi_decls')
+
+
+function print_form(index, field)
+ local data = {forms = {}, title = nil, categories = {}}
+ local args = decls[index][2]
+ inflections[decls[index][1]](args, data)
+ postprocess(args,data)
+ pprint(data["forms"][field])
+end
+
+function print_form_and_update_result(index, field, answer) 
+  local data = {forms = {}, title = nil, categories = {}}
+  local args = decls[index][2]
+  inflections[decls[index][1]](args, data)
+  postprocess(args,data)
+  pprint(data["forms"][field])
+  local check = 0
+  for i, possible in ipairs(data["forms"][field]) do
+    if possible == answer then
+      check = 1
+    end
+  end
+  js.global:eval('answer_is = ' .. check)
+end
+
+</script>
+
+<script>
+var outputElement = document.getElementById('output')
+function setOutput(element) {
+ outputElement = document.getElementById(element)
+emscripten.print = function(x) {
+//  outputElement.textContent = (outputElement.textContent ? outputElement.textContent + '\n' : '') + x;
+  outputElement.textContent = x;
+}
+}
+
+var random_index;
+
+function ShowPartitiivi() {
+  var answer = document.getElementById('answerbox').value;
+
+  setOutput('output');
+  L.execute('print_form_and_update_result(' + random_index + ', "par_pl","' + answer + '")');
+  if( answer_is == 1 ) { alert("correct"); } 
+  else { alert("wrong"); }
+}
+
+function ChooseNominatiivi() {
+  document.getElementById('answerbox').value = "";
+  document.getElementById('output').innerHTML = "";
+  setOutput('answer');
+  var max_var = 37761;
+  var ok = 1;
+  var cnt;
+  do {
+    ok = 1;
+    random_index = Math.floor(Math.random() * max_var) + 1;
+    cnt = cnt + 1;
+    if( cnt === 10 ) {  break; }
+    try {
+    L.execute('print_form(' + random_index + ', "nom_sg")');
+    } catch(e) {
+      ok = 0;
+      console.log("failed " + random_index);
+    }
+  } while ( ok != 1 )
+}
+
+function executeLua() {
+  try {
+    L.execute('print_form(2, "nom_sg")');
+  } catch(e) {
+    outputElement.style.color = "red";
+    outputElement.textContent = e.toString();
+  }
+}
+
+window.setTimeout(ChooseNominatiivi, 1000);
+</script>
+
+
+
+
+
+<!--
+<script type="text/lua">
+
+local pprint = require('pprint')
+ require('nouns')
+ require('fi_decls')
+
+math.randomseed(os.time())
+
+
+
+
+
+pprint(decls[1])
+
+-- local data = {forms = {}, title = nil, categories = {}}
+-- local args = {"kaukalo","a"}
+-- inflections["palvelu"](args, data)
+-- postprocess(args,data)
+-- pprint(data["forms"]["nom_sg"])
+-- pprint(data["forms"]["par_pl"])
+
+ local data = {forms = {}, title = nil, categories = {}}
+ local args = decls[1][2]
+ inflections[decls[1][1]](args, data)
+ postprocess(args,data)
+ pprint(data["forms"]["nom_sg"])
+ pprint(data["forms"]["par_pl"])
+
+
+
+
+
+</script>
+
+-->
+
+  
+
+
+</body></html>
