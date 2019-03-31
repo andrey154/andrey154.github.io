@@ -65,7 +65,7 @@ var outputElement = document.getElementById('output')
 function setOutput(element) {
  outputElement = document.getElementById(element)
  emscripten.print = function(x) {
-   outputElement.textContent = x;
+   outputElement.textContent =  outputElement.textContent + x;
  }
 }
 
@@ -82,6 +82,7 @@ function ShowResult() {
 }
 
 function ChooseNominatiivi() {
+  document.getElementById('question').textContent = "";
   document.getElementById('answerbox').value = "";
   document.getElementById('output').innerHTML = "";
   setOutput('question');
@@ -91,6 +92,7 @@ function ChooseNominatiivi() {
   do {
     ok = 1;
     random_index = Math.floor(Math.random() * max_var) + 1;
+//    random_index = 4184;
     cnt = cnt + 1;
     if( cnt === 10 ) {  break; }
     try {
