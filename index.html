@@ -2,11 +2,23 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <body>
-<input id="answerbox" type="text">
-<button type="button" onclick=ShowPartitiivi()>submit answer</button>
-<button type="button" onclick=ChooseNominatiivi()>Next</button>
-<div id="answer">    
+<h1>Trainer of Finnish declensions.</h1>
+Nominative:
+<div id="question">    
 </div>
+<button type="button" onclick=ChooseNominatiivi()>Next</button>
+<br/>
+<select id="decl_to_test">
+  <option value="gen_sg">genitive singular</option>
+  <option value="gen_pl">genitive plural</option>
+  <option value="par_sg">partitive singular</option>
+  <option value="par_pl">partitive plural</option>
+  <option value="ill_sg">illative singular</option>
+  <option value="ill_pl">illative plural</option>
+</select>
+<br/>
+<input id="answerbox" type="text"> <br/>
+<button type="button" onclick=ShowResult()>submit answer</button>
 <div id="output">    
 </div>
 
@@ -52,19 +64,19 @@ end
 var outputElement = document.getElementById('output')
 function setOutput(element) {
  outputElement = document.getElementById(element)
-emscripten.print = function(x) {
-//  outputElement.textContent = (outputElement.textContent ? outputElement.textContent + '\n' : '') + x;
-  outputElement.textContent = x;
-}
+ emscripten.print = function(x) {
+   outputElement.textContent = x;
+ }
 }
 
 var random_index;
 
-function ShowPartitiivi() {
+function ShowResult() {
+  var decl = document.getElementById('decl_to_test').value;
   var answer = document.getElementById('answerbox').value;
 
   setOutput('output');
-  L.execute('print_form_and_update_result(' + random_index + ', "par_pl","' + answer + '")');
+  L.execute('print_form_and_update_result(' + random_index + ', "' + decl + '","' + answer + '")');
   if( answer_is == 1 ) { alert("correct"); } 
   else { alert("wrong"); }
 }
@@ -72,7 +84,7 @@ function ShowPartitiivi() {
 function ChooseNominatiivi() {
   document.getElementById('answerbox').value = "";
   document.getElementById('output').innerHTML = "";
-  setOutput('answer');
+  setOutput('question');
   var max_var = 37761;
   var ok = 1;
   var cnt;
@@ -90,59 +102,7 @@ function ChooseNominatiivi() {
   } while ( ok != 1 )
 }
 
-function executeLua() {
-  try {
-    L.execute('print_form(2, "nom_sg")');
-  } catch(e) {
-    outputElement.style.color = "red";
-    outputElement.textContent = e.toString();
-  }
-}
-
 </script>
-
-
-
-
-
-<!--
-<script type="text/lua">
-
-local pprint = require('pprint')
- require('nouns')
- require('fi_decls')
-
-math.randomseed(os.time())
-
-
-
-
-
-pprint(decls[1])
-
--- local data = {forms = {}, title = nil, categories = {}}
--- local args = {"kaukalo","a"}
--- inflections["palvelu"](args, data)
--- postprocess(args,data)
--- pprint(data["forms"]["nom_sg"])
--- pprint(data["forms"]["par_pl"])
-
- local data = {forms = {}, title = nil, categories = {}}
- local args = decls[1][2]
- inflections[decls[1][1]](args, data)
- postprocess(args,data)
- pprint(data["forms"]["nom_sg"])
- pprint(data["forms"]["par_pl"])
-
-
-
-
-
-</script>
-
--->
-
-  
 
 
 </body></html>
