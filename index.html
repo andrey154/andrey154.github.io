@@ -51,7 +51,7 @@ function print_form_and_update_result(index, field, answer)
   pprint(data["forms"][field])
   local check = 0
   for i, possible in ipairs(data["forms"][field]) do
-    if possible == answer then
+    if string.upper(possible) == string.upper(answer) then
       check = 1
     end
   end
@@ -74,6 +74,7 @@ var random_index;
 function ShowResult() {
   var decl = document.getElementById('decl_to_test').value;
   var answer = document.getElementById('answerbox').value;
+  document.getElementById('output').innerHTML = "";
 
   setOutput('output');
   L.execute('print_form_and_update_result(' + random_index + ', "' + decl + '","' + answer + '")');
@@ -92,7 +93,6 @@ function ChooseNominatiivi() {
   do {
     ok = 1;
     random_index = Math.floor(Math.random() * max_var) + 1;
-//    random_index = 4184;
     cnt = cnt + 1;
     if( cnt === 10 ) {  break; }
     try {
