@@ -2,30 +2,62 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <body>
-<h1>Hello world!</h1>
-Nominative:
-<div id="question">    
-</div>
-<button type="button" onclick=ChooseNominatiivi()>Next</button>
 <br/>
 <select id="decl_to_test">
-  <option value="gen_sg">genitive singular</option>
-  <option value="gen_pl">genitive plural</option>
-  <option value="par_sg">partitive singular</option>
-  <option value="par_pl">partitive plural</option>
-  <option value="ill_sg">illative singular</option>
-  <option value="ill_pl">illative plural</option>
+  <option value="nom_sg->par_sg">nom/partitive singular</option>
+  <option value="nom_sg->par_pl">nom/partitive plural</option>
+  <option value="nom_sg->gen_sg">nom/genetive singular</option>
+  <option value="nom_sg->gen_pl">nom/genetive plural</option>
+  <option value="nom_sg->ill_sg">nom/illative singular</option>
+  <option value="nom_sg->ill_pl">nom/illative plural</option>
+
+  <option value="par_sg->nom_sg">partitive singular/nom</option>
+  <option value="par_pl->nom_sg">partitive plural/nom</option>
+  <option value="gen_sg->nom_sg">genetive singular/nom</option>
+  <option value="gen_pl->nom_sg">genetive plural/nom</option>
+  <option value="ill_sg->nom_sg">illative singular/nom</option>
+  <option value="ill_pl->nom_sg">illative plural/nom</option>
 </select>
+<div id="question_form_text"></div>
+<div id="question_text"></div>
+<button type="button" onclick=ChooseNominatiivi()>Next</button>
 <br/>
-<input id="answerbox" type="text"> <br/>
+<input id="answer_input" type="text"> <br/>
 <button type="button" onclick=ShowResult()>submit answer</button>
-<div id="output">    
-</div>
+<div id="answer_form_text"></div> 
+<div id="answer_text"></div>
 
 <script src="./lua.vm.js"></script>
 
 <script>
-var answer_is;
+var answer_correct;
+
+var form_names = { 
+'nom_sg': 'Nominatiivi', 
+'gen_sg': 'Yksiko genetiivi',
+'gen_pl': 'Moniko genetiivi',
+'par_sg': 'Yksiko partitiivi',
+'par_pl': 'Moniko partitiivi',
+'ill_sg': 'Yksiko illatiivi',
+'ill_pl': 'Moniko illatiivi'
+};
+
+
+var scenarios = { 
+'nom_sg->par_sg': { 'question_form': 'nom_sg', 'answer_form': 'par_sg'},
+'nom_sg->par_pl': { 'question_form': 'nom_sg', 'answer_form': 'par_pl'},
+'nom_sg->gen_sg': { 'question_form': 'nom_sg', 'answer_form': 'gen_sg'},
+'nom_sg->gen_pl': { 'question_form': 'nom_sg', 'answer_form': 'gen_pl'},
+'nom_sg->ill_sg': { 'question_form': 'nom_sg', 'answer_form': 'ill_sg'},
+'nom_sg->ill_pl': { 'question_form': 'nom_sg', 'answer_form': 'ill_pl'},
+'par_sg->nom_sg': { 'question_form': 'par_sg', 'answer_form': 'nom_sg'},
+'par_pl->nom_sg': { 'question_form': 'par_pl', 'answer_form': 'nom_sg'},
+'gen_sg->nom_sg': { 'question_form': 'gen_sg', 'answer_form': 'nom_sg'},
+'gen_pl->nom_sg': { 'question_form': 'gen_pl', 'answer_form': 'nom_sg'},
+'ill_sg->nom_sg': { 'question_form': 'ill_sg', 'answer_form': 'nom_sg'},
+'ill_pl->nom_sg': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg'},
+};
+
 </script>
 
 <script type="text/lua">
@@ -35,33 +67,33 @@ require('nouns')
 require('fi_decls')
 
 
-function print_form(index, field)
+function print_form(index, form)
  local data = {forms = {}, title = nil, categories = {}}
  local args = decls[index][2]
  inflections[decls[index][1]](args, data)
  postprocess(args,data)
- pprint(data["forms"][field])
+ pprint(data["forms"][form])
 end
 
-function print_form_and_update_result(index, field, answer) 
+function print_form_and_update_result(index, form, answer) 
   local data = {forms = {}, title = nil, categories = {}}
   local args = decls[index][2]
   inflections[decls[index][1]](args, data)
   postprocess(args,data)
-  pprint(data["forms"][field])
+  pprint(data["forms"][form])
   local check = 0
-  for i, possible in ipairs(data["forms"][field]) do
+  for i, possible in ipairs(data["forms"][form]) do
     if string.upper(possible) == string.upper(answer) then
       check = 1
     end
   end
-  js.global:eval('answer_is = ' .. check)
+  js.global:eval('answer_correct = ' .. check)
 end
 
 </script>
 
 <script>
-var outputElement = document.getElementById('output')
+var outputElement = document.getElementById('answer_text')
 function setOutput(element) {
  outputElement = document.getElementById(element)
  emscripten.print = function(x) {
@@ -72,22 +104,27 @@ function setOutput(element) {
 var random_index;
 
 function ShowResult() {
-  var decl = document.getElementById('decl_to_test').value;
-  var answer = document.getElementById('answerbox').value;
-  document.getElementById('output').innerHTML = "";
+  var current_scenario = document.getElementById('decl_to_test').value;
+  var answer_form = scenarios[current_scenario]['answer_form'];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
+  var answer = document.getElementById('answer_input').value;
+  document.getElementById('answer_text').innerHTML = "";
 
-  setOutput('output');
-  L.execute('print_form_and_update_result(' + random_index + ', "' + decl + '","' + answer + '")');
-  if( answer_is == 1 ) { alert("correct"); } 
+  setOutput('answer_text');
+  L.execute('print_form_and_update_result(' + random_index + ', "' + answer_form + '","' + answer + '")');
+  if( answer_correct == 1 ) { alert("correct"); } 
   else { alert("wrong"); }
 }
 
 function ChooseNominatiivi() {
-  document.getElementById('question').textContent = "";
-  document.getElementById('answerbox').value = "";
-  document.getElementById('output').innerHTML = "";
-  setOutput('question');
-  var max_var = 37761;
+  var current_scenario = document.getElementById('decl_to_test').value;
+  var question_form = scenarios[current_scenario]['question_form'];
+  document.getElementById('question_form_text').textContent = form_names[question_form];
+  document.getElementById('question_text').textContent = "";
+  document.getElementById('answer_input').value = "";
+  document.getElementById('answer_text').innerHTML = "";
+  setOutput('question_text');
+  var max_var = 30284;
   var ok = 1;
   var cnt;
   do {
@@ -96,7 +133,8 @@ function ChooseNominatiivi() {
     cnt = cnt + 1;
     if( cnt === 10 ) {  break; }
     try {
-    L.execute('print_form(' + random_index + ', "nom_sg")');
+      var lua_command = 'print_form(' + random_index + ', "' + question_form + '")';
+      L.execute(lua_command);
     } catch(e) {
       ok = 0;
       console.log("failed " + random_index);
