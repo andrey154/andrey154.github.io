@@ -19,6 +19,7 @@ Select training scenario:
   <option value="gen_pl->nom_sg">genetive plural/nom</option>
   <option value="ill_sg->nom_sg">illative singular/nom</option>
   <option value="ill_pl->nom_sg">illative plural/nom</option>
+  <option value="random">random/random</option>
 </select>
 <br/>
 <button type="button" style="height:40px;width:200px" onclick=ChooseNominatiivi()>Next word</button>
@@ -60,6 +61,7 @@ var scenarios = {
 'gen_pl->nom_sg': { 'question_form': 'gen_pl', 'answer_form': 'nom_sg'},
 'ill_sg->nom_sg': { 'question_form': 'ill_sg', 'answer_form': 'nom_sg'},
 'ill_pl->nom_sg': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg'},
+'random': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg' }
 };
 
 </script>
@@ -128,8 +130,30 @@ function ShowResult() {
   else { alert("wrong"); }
 }
 
+function UpdateRandomScenarioForms() {
+  var form_keys = Object.keys(form_names);
+  var form_keys_len = form_keys.length;
+
+  var q = Math.floor(Math.random() * form_keys_len) ;
+  var a;
+  var cnt = 0;
+  var ok = 0;
+  do {
+    a = Math.floor(Math.random() * form_keys_len) ;
+    if( a !== q ) {  break; } 
+    cnt = cnt + 1;
+    if( cnt > 10 ) { 
+      a=1; 
+      q=1; 
+      break; 
+    }
+  } while ( cnt < 10 )
+  scenarios['random'] = { 'question_form': form_keys[q], 'answer_form': form_keys[a] };
+}
+
 function ChooseNominatiivi() {
   var current_scenario = document.getElementById('decl_to_test').value;
+  if( current_scenario === 'random' ) UpdateRandomScenarioForms();
   var question_form = scenarios[current_scenario]['question_form'];
   var answer_form = scenarios[current_scenario]['answer_form'];
   document.getElementById('question_form_text').textContent = form_names[question_form];
