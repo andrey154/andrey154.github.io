@@ -2,8 +2,10 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <body>
+<h1>Finnish declensions trainer</h1>
+Select training scenario:
 <br/>
-<select id="decl_to_test">
+<select id="decl_to_test" onchange="UpdateFormNames()">
   <option value="nom_sg->par_sg">nom/partitive singular</option>
   <option value="nom_sg->par_pl">nom/partitive plural</option>
   <option value="nom_sg->gen_sg">nom/genetive singular</option>
@@ -18,13 +20,15 @@
   <option value="ill_sg->nom_sg">illative singular/nom</option>
   <option value="ill_pl->nom_sg">illative plural/nom</option>
 </select>
+<br/>
+<button type="button" style="height:40px;width:200px" onclick=ChooseNominatiivi()>Next word</button>
 <div id="question_form_text"></div>
 <div id="question_text"></div>
-<button type="button" onclick=ChooseNominatiivi()>Next</button>
+Type
 <br/>
+<div id="answer_form_text"></div> 
 <input id="answer_input" type="text"> <br/>
 <button type="button" onclick=ShowResult()>submit answer</button>
-<div id="answer_form_text"></div> 
 <div id="answer_text"></div>
 
 <script src="./lua.vm.js"></script>
@@ -103,6 +107,14 @@ function setOutput(element) {
 
 var random_index;
 
+function UpdateFormNames() {
+  var current_scenario = document.getElementById('decl_to_test').value;
+  var question_form = scenarios[current_scenario]['question_form'];
+  var answer_form = scenarios[current_scenario]['answer_form'];
+  document.getElementById('question_form_text').textContent = form_names[question_form];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
+}
+
 function ShowResult() {
   var current_scenario = document.getElementById('decl_to_test').value;
   var answer_form = scenarios[current_scenario]['answer_form'];
@@ -119,7 +131,9 @@ function ShowResult() {
 function ChooseNominatiivi() {
   var current_scenario = document.getElementById('decl_to_test').value;
   var question_form = scenarios[current_scenario]['question_form'];
+  var answer_form = scenarios[current_scenario]['answer_form'];
   document.getElementById('question_form_text').textContent = form_names[question_form];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
   document.getElementById('question_text').textContent = "";
   document.getElementById('answer_input').value = "";
   document.getElementById('answer_text').innerHTML = "";
