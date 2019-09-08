@@ -2,24 +2,26 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <body>
-<h1>Finnish declensions trainer</h1>
+<h1>Finnish declensions
+<br/>
+ trainer</h1>
 Select training scenario:
 <br/>
 <select id="decl_to_test" onchange="UpdateFormNames()">
+  <option value="random">(small) random/random</option>
   <option value="nom_sg->par_sg">nom/partitive singular</option>
   <option value="nom_sg->par_pl">nom/partitive plural</option>
   <option value="nom_sg->gen_sg">nom/genetive singular</option>
   <option value="nom_sg->gen_pl">nom/genetive plural</option>
   <option value="nom_sg->ill_sg">nom/illative singular</option>
   <option value="nom_sg->ill_pl">nom/illative plural</option>
-
   <option value="par_sg->nom_sg">partitive singular/nom</option>
   <option value="par_pl->nom_sg">partitive plural/nom</option>
   <option value="gen_sg->nom_sg">genetive singular/nom</option>
   <option value="gen_pl->nom_sg">genetive plural/nom</option>
   <option value="ill_sg->nom_sg">illative singular/nom</option>
   <option value="ill_pl->nom_sg">illative plural/nom</option>
-  <option value="random">random/random</option>
+  <option value="full_random">(full) random/random</option>
 </select>
 <br/>
 <button type="button" style="height:40px;width:200px" onclick=ChooseNominatiivi()>Next word</button>
@@ -30,23 +32,71 @@ Type
 <div id="answer_form_text"></div> 
 <input id="answer_input" type="text"> <br/>
 <button type="button" onclick=ShowResult()>submit answer</button>
+<br/>
+Correct answer:
 <div id="answer_text"></div>
+Your score (0-100):
+<div id="score"></div>
 
 <script src="./lua.vm.js"></script>
 
 <script>
 var answer_correct;
+var random_index;
+var number_of_answers = 0;
+var number_of_correct_answers = 0;
+
 
 var form_names = { 
-'nom_sg': 'Nominatiivi', 
-'gen_sg': 'Yksiko genetiivi',
-'gen_pl': 'Moniko genetiivi',
-'par_sg': 'Yksiko partitiivi',
-'par_pl': 'Moniko partitiivi',
-'ill_sg': 'Yksiko illatiivi',
-'ill_pl': 'Moniko illatiivi'
+'abe_pl': 'mon abessivi (tta)',
+'abe_sg': 'yks abessiivi (tta)',
+'abl_pl': 'mon ablatiivi (miltä,lta)',
+'abl_sg': 'yks ablatiivi (miltä,lta)',
+'ade_pl': 'mon adessiivi (millä,lla)',
+'ade_sg': 'yks adessiivi (millä,lla)',
+'all_pl': 'mon allatiivi (mille,lle)',
+'all_sg': 'yks allatiivi (mille,lle)',
+'com_pl': 'mon komitatiivi (ne)',
+'ela_pl': 'mon elatiivi (mistä,sta)',
+'ela_sg': 'yks elatiivi (mistä,sta)',
+'ess_pl': 'mon essiivi (minä,na)',
+'ess_sg': 'yks essiivi (minä,na)',
+'gen_pl': 'mon genetiivi (minkä,en)',
+'gen_sg': 'yks genetiivi (minkä,n)',
+'ill_pl': 'mon illatiivi (mihin,Vn)',
+'ill_sg': 'yks illatiivi (mihin,Vn)',
+'ine_pl': 'mon inessiivi (missä,ssa)',
+'ine_sg': 'yks inessiivi (missä,ssa)',
+'ins_pl': 'mon instruktiivi (n)',
+'ins_sg': 'yks instructiivi (n)',
+'nom_pl': 'mon nominatiivi (mitkä,t)',
+'nom_sg': 'yks nominatiivi (mikä)', 
+'par_pl': 'mon partitiivi (mitä,a)',
+'par_sg': 'yks partitiivi (mitä,a)',
+'tra_pl': 'mon translatiivi (miksi,ksi)',
+'tra_sg': 'yks translatiivi (miksi,ksi)',
 };
 
+var small_random_forms_names = [ 
+'abl_pl',
+'abl_sg',
+'ade_pl',
+'ade_sg',
+'all_pl',
+'all_sg',
+'ela_pl',
+'ela_sg',
+'gen_pl',
+'gen_sg',
+'ill_pl',
+'ill_sg',
+'ine_pl',
+'ine_sg',
+'nom_pl',
+'nom_sg',
+'par_pl',
+'par_sg',
+];
 
 var scenarios = { 
 'nom_sg->par_sg': { 'question_form': 'nom_sg', 'answer_form': 'par_sg'},
@@ -61,7 +111,8 @@ var scenarios = {
 'gen_pl->nom_sg': { 'question_form': 'gen_pl', 'answer_form': 'nom_sg'},
 'ill_sg->nom_sg': { 'question_form': 'ill_sg', 'answer_form': 'nom_sg'},
 'ill_pl->nom_sg': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg'},
-'random': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg' }
+'random': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg' },
+'full_random': { 'question_form': 'ill_pl', 'answer_form': 'nom_sg' },
 };
 
 </script>
@@ -107,7 +158,6 @@ function setOutput(element) {
  }
 }
 
-var random_index;
 
 function UpdateFormNames() {
   var current_scenario = document.getElementById('decl_to_test').value;
@@ -128,18 +178,17 @@ function ShowResult() {
   L.execute('print_form_and_update_result(' + random_index + ', "' + answer_form + '","' + answer + '")');
   if( answer_correct == 1 ) { alert("correct"); } 
   else { alert("wrong"); }
+  number_of_answers += 1;
+  number_of_correct_answers += answer_correct;
+  document.getElementById('score').innerHTML = " " + Math.floor( 100 * number_of_correct_answers / number_of_answers );
 }
 
-function UpdateRandomScenarioForms() {
-  var form_keys = Object.keys(form_names);
-  var form_keys_len = form_keys.length;
-
-  var q = Math.floor(Math.random() * form_keys_len) ;
+function GetTwoDifferentRandomNumbers(maxVal) {
+  var q = Math.floor(Math.random() * maxVal) ;
   var a;
   var cnt = 0;
-  var ok = 0;
   do {
-    a = Math.floor(Math.random() * form_keys_len) ;
+    a = Math.floor(Math.random() * maxVal) ;
     if( a !== q ) {  break; } 
     cnt = cnt + 1;
     if( cnt > 10 ) { 
@@ -148,12 +197,28 @@ function UpdateRandomScenarioForms() {
       break; 
     }
   } while ( cnt < 10 )
-  scenarios['random'] = { 'question_form': form_keys[q], 'answer_form': form_keys[a] };
+  return {'first': a, 'second': q};
+// 12921
+}
+
+function UpdateSmallRandomScenarioForms() {
+  var form_keys = small_random_forms_names; 
+  var form_keys_len = form_keys.length;
+  var choise = GetTwoDifferentRandomNumbers(form_keys_len);
+  scenarios['random'] = { 'question_form': form_keys[choise['first']], 'answer_form': form_keys[choise['second']] };
+}
+
+function UpdateFullRandomScenarioForms() {
+  var form_keys = Object.keys(form_names);
+  var form_keys_len = form_keys.length;
+  var choise = GetTwoDifferentRandomNumbers(form_keys_len);
+  scenarios['full_random'] = { 'question_form': form_keys[choise['first']], 'answer_form': form_keys[choise['second']] };
 }
 
 function ChooseNominatiivi() {
   var current_scenario = document.getElementById('decl_to_test').value;
-  if( current_scenario === 'random' ) UpdateRandomScenarioForms();
+  if( current_scenario === 'random' ) UpdateSmallRandomScenarioForms();
+  if( current_scenario === 'full_random' ) UpdateFullRandomScenarioForms();
   var question_form = scenarios[current_scenario]['question_form'];
   var answer_form = scenarios[current_scenario]['answer_form'];
   document.getElementById('question_form_text').textContent = form_names[question_form];
