@@ -36,7 +36,7 @@ var number_of_correct_answers = 0;
 
 
 var form_names = {
-'agnt_part': 'agnt_part',
+'agnt_part': 'Agenttipartisiippi',
 'cond_1pl': 'cond_1pl',
 'cond_1pl_neg': 'cond_1pl_neg',
 'cond_1sg': 'cond_1sg',
@@ -234,20 +234,6 @@ var small_random_forms_names = [
 'cond_perf_3sg_neg',
 'cond_perf_pasv',
 'cond_perf_pasv_neg',
-'impr_1pl',
-'impr_1pl_neg',
-'impr_2pl',
-'impr_2pl_neg',
-'impr_2sg',
-'impr_2sg_neg',
-'impr_3pl',
-'impr_3pl_neg',
-'impr_3sg',
-'impr_3sg_neg',
-'impr_conn',
-'impr_pasv',
-'impr_pasv_conn',
-'impr_pasv_neg',
 'inf1_long',
 'inf2_ine',
 'inf2_ins',
@@ -442,8 +428,10 @@ function ChooseNominatiivi() {
   document.getElementById('question_form_text').textContent = form_names[question_form];
   document.getElementById('answer_form_text').textContent = form_names[answer_form];
   document.getElementById('question_text').textContent = "";
+  document.getElementById('answer_input').value = "";
   document.getElementById('answer_text').innerHTML = "";
   setOutput('question_text');
+
   var max_var = 6611;
   var ok = 1;
   var cnt;
