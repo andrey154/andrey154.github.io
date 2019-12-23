@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<body>
+<h1>Finnish declensions
+<br/>
+ trainer</h1>
+Select training scenario:
+<br/>
+<select id="decl_to_test" onchange="UpdateFormNames()">
+  <option value="random">(small) random/random</option>
+  <option value="nom_sg->par_sg">nom/partitive singular</option>
+  <option value="nom_sg->par_pl">nom/partitive plural</option>
+  <option value="nom_sg->gen_sg">nom/genetive singular</option>
+  <option value="nom_sg->gen_pl">nom/genetive plural</option>
+  <option value="nom_sg->ill_sg">nom/illative singular</option>
+  <option value="nom_sg->ill_pl">nom/illative plural</option>
+  <option value="par_sg->nom_sg">partitive singular/nom</option>
+  <option value="par_pl->nom_sg">partitive plural/nom</option>
+  <option value="gen_sg->nom_sg">genetive singular/nom</option>
+  <option value="gen_pl->nom_sg">genetive plural/nom</option>
+  <option value="ill_sg->nom_sg">illative singular/nom</option>
+  <option value="ill_pl->nom_sg">illative plural/nom</option>
+  <option value="full_random">(full) random/random</option>
+</select>
+<br/>
+<button type="button" style="height:40px;width:200px" onclick=ChooseNominatiivi()>Next word</button>
+<div id="question_form_text"></div>
+<div id="question_text"></div>
+Type
+<br/>
+<div id="answer_form_text"></div> 
+<input id="answer_input" type="text"> <br/>
+<button type="button" onclick=ShowResult()>submit answer</button>
+<br/>
+Correct answer:
+<div id="answer_text"></div>
+Your score (0-100):
+<div id="score"></div>
+
+<script src="./lua.vm.js"></script>
+
+<script>
+var answer_correct;
+var random_index;
+var number_of_answers = 0;
+var number_of_correct_answers = 0;
+
+
+var form_names = {
+'agnt_part': 'agnt_part',
+'cond_1pl': 'cond_1pl',
+'cond_1pl_neg': 'cond_1pl_neg',
+'cond_1sg': 'cond_1sg',
+'cond_1sg_neg': 'cond_1sg_neg',
+'cond_2pl': 'cond_2pl',
+'cond_2pl_neg': 'cond_2pl_neg',
+'cond_2sg': 'cond_2sg',
+'cond_2sg_neg': 'cond_2sg_neg',
+'cond_3pl': 'cond_3pl',
+'cond_3pl_neg': 'cond_3pl_neg',
+'cond_3sg': 'cond_3sg',
+'cond_3sg_neg': 'cond_3sg_neg',
+'cond_conn': 'cond_conn',
+'cond_pasv': 'cond_pasv',
+'cond_pasv_conn': 'cond_pasv_conn',
+'cond_pasv_neg': 'cond_pasv_neg',
+'cond_perf_1pl': 'cond_perf_1pl',
+'cond_perf_1pl_neg': 'cond_perf_1pl_neg',
+'cond_perf_1sg': 'cond_perf_1sg',
+'cond_perf_1sg_neg': 'cond_perf_1sg_neg',
+'cond_perf_2pl': 'cond_perf_2pl',
+'cond_perf_2pl_neg': 'cond_perf_2pl_neg',
+'cond_perf_2sg': 'cond_perf_2sg',
+'cond_perf_2sg_neg': 'cond_perf_2sg_neg',
+'cond_perf_3pl': 'cond_perf_3pl',
+'cond_perf_3pl_neg': 'cond_perf_3pl_neg',
+'cond_perf_3sg': 'cond_perf_3sg',
+'cond_perf_3sg_neg': 'cond_perf_3sg_neg',
+'cond_perf_pasv': 'cond_perf_pasv',
+'cond_perf_pasv_neg': 'cond_perf_pasv_neg',
+'impr_1pl': 'impr_1pl',
+'impr_1pl_neg': 'impr_1pl_neg',
+'impr_2pl': 'impr_2pl',
+'impr_2pl_neg': 'impr_2pl_neg',
+'impr_2sg': 'impr_2sg',
+'impr_2sg_neg': 'impr_2sg_neg',
+'impr_3pl': 'impr_3pl',
+'impr_3pl_neg': 'impr_3pl_neg',
+'impr_3sg': 'impr_3sg',
+'impr_3sg_neg': 'impr_3sg_neg',
+'impr_conn': 'impr_conn',
+'impr_pasv': 'impr_pasv',
+'impr_pasv_conn': 'impr_pasv_conn',
+'impr_pasv_neg': 'impr_pasv_neg',
+'impr_perf_1pl': 'impr_perf_1pl',
+'impr_perf_1pl_neg': 'impr_perf_1pl_neg',
+'impr_perf_2pl': 'impr_perf_2pl',
+'impr_perf_2pl_neg': 'impr_perf_2pl_neg',
+'impr_perf_2sg': 'impr_perf_2sg',
+'impr_perf_2sg_neg': 'impr_perf_2sg_neg',
+'impr_perf_3pl': 'impr_perf_3pl',
+'impr_perf_3pl_neg': 'impr_perf_3pl_neg',
+'impr_perf_3sg': 'impr_perf_3sg',
+'impr_perf_3sg_neg': 'impr_perf_3sg_neg',
+'impr_perf_pasv': 'impr_perf_pasv',
+'impr_perf_pasv_neg': 'impr_perf_pasv_neg',
+'inf1_long': 'inf1_long',
+'inf2_ine': 'inf2_ine',
+'inf2_ins': 'inf2_ins',
+'inf2_pasv_ine': 'inf2_pasv_ine',
+'inf3_abe': 'inf3_abe',
+'inf3_ade': 'inf3_ade',
+'inf3_ela': 'inf3_ela',
+'inf3_ill': 'inf3_ill',
+'inf3_ine': 'inf3_ine',
+'inf3_ins': 'inf3_ins',
+'inf3_pasv_ins': 'inf3_pasv_ins',
+'inf4_nom': 'inf4_nom',
+'inf4_par': 'inf4_par',
+'nega_part': 'nega_part',
+'past_1pl': 'past_1pl',
+'past_1pl_neg': 'past_1pl_neg',
+'past_1sg': 'past_1sg',
+'past_1sg_neg': 'past_1sg_neg',
+'past_2pl': 'past_2pl',
+'past_2pl_neg': 'past_2pl_neg',
+'past_2sg': 'past_2sg',
+'past_2sg_neg': 'past_2sg_neg',
+'past_3pl': 'past_3pl',
+'past_3pl_neg': 'past_3pl_neg',
+'past_3sg': 'past_3sg',
+'past_3sg_neg': 'past_3sg_neg',
+'past_part': 'past_part',
+'past_part_pl': 'past_part_pl',
+'past_pasv': 'past_pasv',
+'past_pasv_neg': 'past_pasv_neg',
+'past_pasv_part': 'past_pasv_part',
+'past_perf_1pl': 'past_perf_1pl',
+'past_perf_1pl_neg': 'past_perf_1pl_neg',
+'past_perf_1sg': 'past_perf_1sg',
+'past_perf_1sg_neg': 'past_perf_1sg_neg',
+'past_perf_2pl': 'past_perf_2pl',
+'past_perf_2pl_neg': 'past_perf_2pl_neg',
+'past_perf_2sg': 'past_perf_2sg',
+'past_perf_2sg_neg': 'past_perf_2sg_neg',
+'past_perf_3pl': 'past_perf_3pl',
+'past_perf_3pl_neg': 'past_perf_3pl_neg',
+'past_perf_3sg': 'past_perf_3sg',
+'past_perf_3sg_neg': 'past_perf_3sg_neg',
+'past_perf_pasv': 'past_perf_pasv',
+'past_perf_pasv_neg': 'past_perf_pasv_neg',
+'potn_1pl': 'potn_1pl',
+'potn_1pl_neg': 'potn_1pl_neg',
+'potn_1sg': 'potn_1sg',
+'potn_1sg_neg': 'potn_1sg_neg',
+'potn_2pl': 'potn_2pl',
+'potn_2pl_neg': 'potn_2pl_neg',
+'potn_2sg': 'potn_2sg',
+'potn_2sg_neg': 'potn_2sg_neg',
+'potn_3pl': 'potn_3pl',
+'potn_3pl_neg': 'potn_3pl_neg',
+'potn_3sg': 'potn_3sg',
+'potn_3sg_neg': 'potn_3sg_neg',
+'potn_conn': 'potn_conn',
+'potn_pasv': 'potn_pasv',
+'potn_pasv_conn': 'potn_pasv_conn',
+'potn_pasv_neg': 'potn_pasv_neg',
+'potn_perf_1pl': 'potn_perf_1pl',
+'potn_perf_1pl_neg': 'potn_perf_1pl_neg',
+'potn_perf_1sg': 'potn_perf_1sg',
+'potn_perf_1sg_neg': 'potn_perf_1sg_neg',
+'potn_perf_2pl': 'potn_perf_2pl',
+'potn_perf_2pl_neg': 'potn_perf_2pl_neg',
+'potn_perf_2sg': 'potn_perf_2sg',
+'potn_perf_2sg_neg': 'potn_perf_2sg_neg',
+'potn_perf_3pl': 'potn_perf_3pl',
+'potn_perf_3pl_neg': 'potn_perf_3pl_neg',
+'potn_perf_3sg': 'potn_perf_3sg',
+'potn_perf_3sg_neg': 'potn_perf_3sg_neg',
+'potn_perf_pasv': 'potn_perf_pasv',
+'potn_perf_pasv_neg': 'potn_perf_pasv_neg',
+'pres_1pl': 'pres_1pl',
+'pres_1pl_neg': 'pres_1pl_neg',
+'pres_1sg': 'pres_1sg',
+'pres_1sg_neg': 'pres_1sg_neg',
+'pres_2pl': 'pres_2pl',
+'pres_2pl_neg': 'pres_2pl_neg',
+'pres_2sg': 'pres_2sg',
+'pres_2sg_neg': 'pres_2sg_neg',
+'pres_3pl': 'pres_3pl',
+'pres_3pl_neg': 'pres_3pl_neg',
+'pres_3sg': 'pres_3sg',
+'pres_3sg_neg': 'pres_3sg_neg',
+'pres_conn': 'pres_conn',
+'pres_part': 'pres_part',
+'pres_pasv': 'pres_pasv',
+'pres_pasv_conn': 'pres_pasv_conn',
+'pres_pasv_neg': 'pres_pasv_neg',
+'pres_pasv_part': 'pres_pasv_part',
+'pres_perf_1pl': 'pres_perf_1pl',
+'pres_perf_1pl_neg': 'pres_perf_1pl_neg',
+'pres_perf_1sg': 'pres_perf_1sg',
+'pres_perf_1sg_neg': 'pres_perf_1sg_neg',
+'pres_perf_2pl': 'pres_perf_2pl',
+'pres_perf_2pl_neg': 'pres_perf_2pl_neg',
+'pres_perf_2sg': 'pres_perf_2sg',
+'pres_perf_2sg_neg': 'pres_perf_2sg_neg',
+'pres_perf_3pl': 'pres_perf_3pl',
+'pres_perf_3pl_neg': 'pres_perf_3pl_neg',
+'pres_perf_3sg': 'pres_perf_3sg',
+'pres_perf_3sg_neg': 'pres_perf_3sg_neg',
+'pres_perf_pasv': 'pres_perf_pasv',
+'pres_perf_pasv_neg': 'pres_perf_pasv_neg',
+};
+
+var small_random_forms_names = [ 
+'agnt_part',
+'cond_1pl',
+'cond_1pl_neg',
+'cond_1sg',
+'cond_1sg_neg',
+'cond_2pl',
+'cond_2pl_neg',
+'cond_2sg',
+'cond_2sg_neg',
+'cond_3pl',
+'cond_3pl_neg',
+'cond_3sg',
+'cond_3sg_neg',
+'cond_conn',
+'cond_pasv',
+'cond_pasv_conn',
+'cond_pasv_neg',
+'cond_perf_1pl',
+'cond_perf_1pl_neg',
+'cond_perf_1sg',
+'cond_perf_1sg_neg',
+'cond_perf_2pl',
+'cond_perf_2pl_neg',
+'cond_perf_2sg',
+'cond_perf_2sg_neg',
+'cond_perf_3pl',
+'cond_perf_3pl_neg',
+'cond_perf_3sg',
+'cond_perf_3sg_neg',
+'cond_perf_pasv',
+'cond_perf_pasv_neg',
+'impr_1pl',
+'impr_1pl_neg',
+'impr_2pl',
+'impr_2pl_neg',
+'impr_2sg',
+'impr_2sg_neg',
+'impr_3pl',
+'impr_3pl_neg',
+'impr_3sg',
+'impr_3sg_neg',
+'impr_conn',
+'impr_pasv',
+'impr_pasv_conn',
+'impr_pasv_neg',
+'inf1_long',
+'inf2_ine',
+'inf2_ins',
+'inf2_pasv_ine',
+'inf3_abe',
+'inf3_ade',
+'inf3_ela',
+'inf3_ill',
+'inf3_ine',
+'inf3_ins',
+'inf3_pasv_ins',
+'inf4_nom',
+'inf4_par',
+'nega_part',
+'past_1pl',
+'past_1pl_neg',
+'past_1sg',
+'past_1sg_neg',
+'past_2pl',
+'past_2pl_neg',
+'past_2sg',
+'past_2sg_neg',
+'past_3pl',
+'past_3pl_neg',
+'past_3sg',
+'past_3sg_neg',
+'past_part',
+'past_part_pl',
+'past_pasv',
+'past_pasv_neg',
+'past_pasv_part',
+'past_perf_1pl',
+'past_perf_1pl_neg',
+'past_perf_1sg',
+'past_perf_1sg_neg',
+'past_perf_2pl',
+'past_perf_2pl_neg',
+'past_perf_2sg',
+'past_perf_2sg_neg',
+'past_perf_3pl',
+'past_perf_3pl_neg',
+'past_perf_3sg',
+'past_perf_3sg_neg',
+'past_perf_pasv',
+'past_perf_pasv_neg',
+'pres_1pl',
+'pres_1pl_neg',
+'pres_1sg',
+'pres_1sg_neg',
+'pres_2pl',
+'pres_2pl_neg',
+'pres_2sg',
+'pres_2sg_neg',
+'pres_3pl',
+'pres_3pl_neg',
+'pres_3sg',
+'pres_3sg_neg',
+'pres_conn',
+'pres_part',
+'pres_pasv',
+'pres_pasv_conn',
+'pres_pasv_neg',
+'pres_pasv_part',
+'pres_perf_1pl',
+'pres_perf_1pl_neg',
+'pres_perf_1sg',
+'pres_perf_1sg_neg',
+'pres_perf_2pl',
+'pres_perf_2pl_neg',
+'pres_perf_2sg',
+'pres_perf_2sg_neg',
+'pres_perf_3pl',
+'pres_perf_3pl_neg',
+'pres_perf_3sg',
+'pres_perf_3sg_neg',
+'pres_perf_pasv',
+'pres_perf_pasv_neg',
+];
+
+var scenarios = { 
+'random': { 'question_form': 'pres_perf_pasv', 'answer_form': 'pres_perf_3sg_neg' },
+'full_random': { 'question_form': 'pres_perf_pasv', 'answer_form': 'pres_perf_3sg_neg' },
+};
+
+</script>
+
+<script type="text/lua">
+
+local pprint = require('pprint')
+require('verbs')
+require('fi_conj')
+
+
+function print_form(index, form)
+ local data = {forms = {}, title = nil, categories = {}}
+ local args = conjs[index][2]
+ inflections[conjs[index][1]](args, data)
+ postprocess(args,data)
+ pprint(data["forms"][form])
+-- pprint(data)
+end
+
+function print_form_and_update_result(index, form, answer) 
+  local data = {forms = {}, title = nil, categories = {}}
+  local args = conjs[index][2]
+  inflections[conjs[index][1]](args, data)
+  postprocess(args,data)
+  pprint(data["forms"][form])
+  local check = 0
+  for i, possible in ipairs(data["forms"][form]) do
+    if string.upper(possible) == string.upper(answer) then
+      check = 1
+    end
+  end
+  js.global:eval('answer_correct = ' .. check)
+end
+
+</script>
+
+<script>
+var outputElement = document.getElementById('answer_text')
+function setOutput(element) {
+ outputElement = document.getElementById(element)
+ emscripten.print = function(x) {
+   outputElement.textContent =  outputElement.textContent + x;
+ }
+}
+
+
+function UpdateFormNames() {
+  var current_scenario = document.getElementById('decl_to_test').value;
+  var question_form = scenarios[current_scenario]['question_form'];
+  var answer_form = scenarios[current_scenario]['answer_form'];
+  document.getElementById('question_form_text').textContent = form_names[question_form];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
+}
+
+function ShowResult() {
+  var current_scenario = document.getElementById('decl_to_test').value;
+  var answer_form = scenarios[current_scenario]['answer_form'];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
+  var answer = document.getElementById('answer_input').value;
+  document.getElementById('answer_text').innerHTML = "";
+
+  setOutput('answer_text');
+  L.execute('print_form_and_update_result(' + random_index + ', "' + answer_form + '","' + answer + '")');
+  if( answer_correct == 1 ) { alert("correct"); } 
+  else { alert("wrong"); }
+  number_of_answers += 1;
+  number_of_correct_answers += answer_correct;
+  document.getElementById('score').innerHTML = " " + Math.floor( 100 * number_of_correct_answers / number_of_answers );
+}
+
+function GetTwoDifferentRandomNumbers(maxVal) {
+  var q = Math.floor(Math.random() * maxVal) ;
+  var a;
+  var cnt = 0;
+  do {
+    a = Math.floor(Math.random() * maxVal) ;
+    if( a !== q ) {  break; } 
+    cnt = cnt + 1;
+    if( cnt > 10 ) { 
+      a=1; 
+      q=1; 
+      break; 
+    }
+  } while ( cnt < 10 )
+  return {'first': a, 'second': q};
+// 12921
+}
+
+function UpdateSmallRandomScenarioForms() {
+  var form_keys = small_random_forms_names; 
+  var form_keys_len = form_keys.length;
+  var choise = GetTwoDifferentRandomNumbers(form_keys_len);
+  scenarios['random'] = { 'question_form': form_keys[choise['first']], 'answer_form': form_keys[choise['second']] };
+}
+
+function UpdateFullRandomScenarioForms() {
+  var form_keys = Object.keys(form_names);
+  var form_keys_len = form_keys.length;
+  var choise = GetTwoDifferentRandomNumbers(form_keys_len);
+  scenarios['full_random'] = { 'question_form': form_keys[choise['first']], 'answer_form': form_keys[choise['second']] };
+}
+
+function ChooseNominatiivi() {
+  var current_scenario = document.getElementById('decl_to_test').value;
+  if( current_scenario === 'random' ) UpdateSmallRandomScenarioForms();
+  if( current_scenario === 'full_random' ) UpdateFullRandomScenarioForms();
+  var question_form = scenarios[current_scenario]['question_form'];
+  var answer_form = scenarios[current_scenario]['answer_form'];
+  document.getElementById('question_form_text').textContent = form_names[question_form];
+  document.getElementById('answer_form_text').textContent = form_names[answer_form];
+  document.getElementById('question_text').textContent = "";
+  document.getElementById('answer_text').innerHTML = "";
+  setOutput('question_text');
+  var max_var = 6611;
+  var ok = 1;
+  var cnt;
+  do {
+    ok = 1;
+    random_index = Math.floor(Math.random() * max_var) + 1;
+    cnt = cnt + 1;
+    if( cnt === 10 ) {  break; }
+    try {
+      var lua_command = 'print_form(' + random_index + ', "' + question_form + '")';
+      L.execute(lua_command);
+    } catch(e) {
+      ok = 0;
+      console.log("failed " + random_index);
+    }
+  } while ( ok != 1 )
+}
+
+</script>
+
+
+</body></html>
