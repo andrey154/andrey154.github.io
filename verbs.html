@@ -1025,13 +1025,14 @@ function ShowResult() {
   document.getElementById('score').innerHTML = " " + Math.floor( 100 * number_of_correct_answers / number_of_answers );
 }
 
-function GetTwoDifferentRandomNumbers(maxVal) {
+function GetTwoDifferentRandomForms(form_names) {
+  var maxVal = form_names.length;
   var q = Math.floor(Math.random() * maxVal) ;
   var a;
   var cnt = 0;
   do {
     a = Math.floor(Math.random() * maxVal) ;
-    if( a !== q ) {  break; } 
+    if( form_names[a] !== form_names[q] ) {  break; }
     cnt = cnt + 1;
     if( cnt > 10 ) { 
       a=1; 
@@ -1039,19 +1040,13 @@ function GetTwoDifferentRandomNumbers(maxVal) {
       break; 
     }
   } while ( cnt < 10 )
-  return {'first': a, 'second': q};
-}
-
-function UpdateRandomScenarioForms(form_names) {
-  var form_keys = this[form_names];
-  var form_keys_len = form_keys.length;
-  var choise = GetTwoDifferentRandomNumbers(form_keys_len);
-  scenarios[form_names] = { 'question_form': form_keys[choise['first']], 'answer_form': form_keys[choise['second']] };
+  return {'first': form_names[a], 'second': form_names[q]};
 }
 
 function ChooseNominatiivi() {
   var current_scenario = document.getElementById('decl_to_test').value;
-  UpdateRandomScenarioForms(current_scenario);
+  var choise = GetTwoDifferentRandomForms(this[current_scenario]);
+  scenarios[current_scenario] = { 'question_form': choise['first'], 'answer_form': choise['second'] };
   var question_form = scenarios[current_scenario]['question_form'];
   var answer_form = scenarios[current_scenario]['answer_form'];
   document.getElementById('question_form_text').textContent = form_names[question_form];
