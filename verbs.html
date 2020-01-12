@@ -1001,7 +1001,7 @@ function ShowResult() {
   else { alert("wrong"); }
   number_of_answers += 1;
   number_of_correct_answers += answer_correct;
-  document.getElementById('score').innerHTML = " " + Math.floor( 100 * number_of_correct_answers / number_of_answers );
+  document.getElementById('score').innerHTML = " " + Math.floor( 100 * number_of_correct_answers / number_of_answers ) + " or " + number_of_correct_answers + "/" + number_of_answers;
 }
 
 function GetTwoDifferentRandomForms(form_names) {
